@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ParserCombinators;
 
@@ -26,6 +27,14 @@ namespace ParserTests
             {
                 Assert.AreEqual("Expected \"whatever\", got \"hatever\".", exception.Message);
             }
+        }
+
+        [TestMethod]
+        public void ShouldParseRegularExpression()
+        {
+            var regexParser = BasicParsers.GetRegexParser(new Regex("[a-z]+"));
+            var result = regexParser.Parse("whatever multipe words");
+            Assert.AreEqual("whatever",result);
         }
     }
 }
