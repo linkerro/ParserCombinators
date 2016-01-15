@@ -30,22 +30,16 @@ namespace ParserCombinators
                 {
                     return new Result<string, string> {Output = match.Value,Rest = input.Substring(match.Index+match.Length)};
                 }
-                return new Error<string, string> {Message = $"Expected match on {expression.ToString()}."};
+                return new Error<string, string> {Message = $"Expected match on '{expression.ToString()}', got '{input}'."};
             };
         }
     }
 
     public static class ParserExtensions
     {
-        public static TOutput Parse<TInput, TOutput>(this Parser<TInput, TOutput> parser, TInput input)
+        public static Result<TInput,TOutput> Parse<TInput, TOutput>(this Parser<TInput, TOutput> parser, TInput input)
         {
-            var result = parser(input);
-            var error = result as Error<TInput, TOutput>;
-            if (error!=null)
-            {
-                throw new Exception(error.Message);
-            }
-            return result.Output;
+            return parser(input);
         }
     }
 }
