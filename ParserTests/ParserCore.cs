@@ -53,5 +53,16 @@ namespace ParserTests
             var result = stringParser.Parse("whatever man");
             Assert.AreEqual(" man", result.Rest);
         }
+
+        [TestMethod]
+        public void ShouldConcatenateParsers()
+        {
+            var identifierParser = BasicParsers.GetRegexParser(new Regex("[a-z]+"));
+            var leftParenParser = BasicParsers.GetStringParser("(");
+            var rightParenParser = BasicParsers.GetStringParser(")");
+            var functionParser = identifierParser + leftParenParser+ identifierParser + rightParenParser;
+            var result = functionParser.Parse("func(parameter)");
+            Assert.IsNotNull(result);
+        }
     }
 }
