@@ -6,14 +6,16 @@ using System.Threading.Tasks;
 
 namespace ParserCombinators
 {
-    public class Result<TInput, TOutput>
+    public class Result<TInput>
     {
-        public TOutput Output;
+        public object Output;
         public TInput Rest;
     }
 
-    public class Error<TInput, TOutput> : Result<TInput, TOutput>
+    public class Error<TInput> : Result<TInput>
     {
         public string Message;
+        public string Expected;
+        public string Actual;
     }
 }
