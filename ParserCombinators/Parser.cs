@@ -18,12 +18,12 @@ namespace ParserCombinators
                 Func = input =>
                 {
                     var result = parser1.Func(input);
-                    if (result.GetType() == typeof (Error<string>))
+                    if (result.GetType() == typeof(Error<string>))
                     {
                         return result;
                     }
                     var result2 = parser2.Func(result.Rest);
-                    if (result2.GetType() == typeof (Error<string>))
+                    if (result2.GetType() == typeof(Error<string>))
                     {
                         return result2;
                     }
@@ -56,7 +56,7 @@ namespace ParserCombinators
                     return new Error<TInput>()
                     {
                         Message = $"Expected <parser1.ExpectedInput|parser2.ExpectedInput>",
-                        Expected = parser1.ExpectedInput.ToString()+"|"+parser2.ExpectedInput.ToString(),
+                        Expected = parser1.ExpectedInput.ToString() + "|" + parser2.ExpectedInput.ToString(),
                         Actual = input.ToString()
                     };
                 }
@@ -79,8 +79,51 @@ namespace ParserCombinators
                 Func = input =>
                 {
                     var result = parser.Func(input);
+                    if (result.GetType() == typeof(Error<string>))
+                    {
+                        return result;
+                    }
                     var mappedResult = mapper(result.Output);
                     return new Result<TInput>() { Rest = result.Rest, Output = mappedResult };
+                }
+            };
+            return mappedParser;
+        }
+
+        public static Parser<string> OneOrMany(this Parser<string> parser, string separator)
+        {
+            Parser<string> mappedParser = new Parser<string>()
+            {
+                Func = input =>
+                {
+                    var rest = input;
+                    var outputs = new List<IEnumerable<object>>();
+                    rest = separator + rest;
+
+                    while (!string.IsNullOrEmpty(rest))
+                    {
+                        rest = rest.Substring(separator.Length, rest.Length - separator.Length);
+
+                        var result = parser.Func(rest);
+                        if (result.GetType() != typeof(Error<string>))
+                        {
+                            outputs.Add(result.Output as IEnumerable<object> ?? new List<object>() { result.Output });
+                            rest = result.Rest;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    if (outputs.Count > 0)
+                    {
+                        return new Result<string> { Output = outputs.SelectMany(x => x).Where(x => x != null).ToList() };
+                    }
+                    return new Error<string>
+                    {
+                        Expected = parser.ExpectedInput,
+                        Actual = parser.ExpectedInput
+                    };
                 }
             };
             return mappedParser;

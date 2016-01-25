@@ -84,5 +84,23 @@ namespace ParserTests
             Assert.AreNotEqual(typeof(Error<string>), result.GetType());
             Assert.AreNotEqual(typeof(Error<string>), result2.GetType());
         }
+
+        [TestMethod]
+        public void ShouldMatchOneOreMoreOfTheSameParser()
+        {
+            var number= R("[0-9]+").Map(n => int.Parse(n.ToString()));
+            var expression = number.OneOrMany("+");
+            var result = expression.Parse("34+345+4");
+            Assert.AreNotEqual(result.GetType(),typeof(Error<string>));
+        }
+
+        [TestMethod]
+        public void ShouldMatchOneOrMoreFails()
+        {
+            var number = R("[0-9]+").Map(n => int.Parse(n.ToString()));
+            var expression = number.OneOrMany("+");
+            var result = expression.Parse("fail");
+            Assert.AreEqual( typeof(Error<string>), result.GetType());
+        }
     }
 }
