@@ -102,5 +102,18 @@ namespace ParserTests
             var result = expression.Parse("fail");
             Assert.AreEqual( typeof(Error<string>), result.GetType());
         }
+
+        [TestMethod]
+        public void ShouldMatchOptionalParsers()
+        {
+            var identifier = R("[a-z]+");
+            var number = R("[0-9]+").Map(n => int.Parse(n.ToString()));
+            var functionCall = identifier + S("(") + number.Optional() + S(")");
+            var result = functionCall.Parse("do()");
+            var result2 = functionCall.Parse("do(45)");
+
+            Assert.AreNotEqual(typeof(Error<string>),result.GetType());
+            Assert.AreNotEqual(typeof(Error<string>),result2.GetType());
+        }
     }
 }

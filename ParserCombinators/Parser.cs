@@ -128,5 +128,27 @@ namespace ParserCombinators
             };
             return mappedParser;
         }
+
+        public static Parser<string> Optional(this Parser<string> parser)
+        {
+            Parser<string> optionalCombinator = new Parser<string>
+            {
+                Func = input =>
+                {
+                    var result = parser.Func(input);
+                    if (result.GetType() == typeof (Error<string>))
+                    {
+                        return new Result<string>
+                        {
+                            Output = null,
+                            Rest = input
+                        };
+                    }
+                    return result;
+                }
+            };
+            return optionalCombinator;
+        }
+
     }
 }
