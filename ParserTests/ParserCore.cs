@@ -115,5 +115,28 @@ namespace ParserTests
             Assert.AreNotEqual(typeof(Error<string>),result.GetType());
             Assert.AreNotEqual(typeof(Error<string>),result2.GetType());
         }
+
+        [TestMethod]
+        public void ShouldNameParsers()
+        {
+            var identifier = R("[a-z]+");
+            var namedIdentifier = identifier.Name("identifier");
+
+            Assert.AreEqual("identifier", namedIdentifier.GetName());
+        }
+
+        [TestMethod]
+        public void ShouldAllowMutuallyRecursiveParsers()
+        {
+            var identifier = R("[a-z]+").Name("identifier");
+            var tag = (S("<") + identifier + S(">")).Name("tag");
+            var tagEnd = (S("<\\") + identifier + S(">")).Name("tagEnd");
+            var node=new Parser<string>().Name("node");
+            var nodeList = (node.OneOrMany("").Optional()).Name("nodeList");
+            node.Func = (tag + nodeList + tagEnd).Name("node").Func;
+            var result = node.Parse("<test><test2><\\test2><\\test>");
+
+            Assert.AreNotEqual(typeof(Error<string>), result.GetType());
+        }
     }
 }
