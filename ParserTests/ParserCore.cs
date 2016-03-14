@@ -86,19 +86,21 @@ namespace ParserTests
         }
 
         [TestMethod]
-        public void ShouldMatchOneOreMoreOfTheSameParser()
+        public void ShouldMatchOneOreMore2OfTheSameParser()
         {
-            var number= R("[0-9]+").Map(n => int.Parse(n.ToString()));
-            var expression = number.OneOrMany("+");
-            var result = expression.Parse("34+345+4");
-            Assert.AreNotEqual(result.GetType(),typeof(Error<string>));
+            var number = R("[0-9]+").Name("number").Map(n => int.Parse(n.ToString()));
+            var expression = (number+S("+").Name("plus").Optional()).OneOrMany().Name("expression");
+            var result = expression.Parse("34 + 345 + 4");
+            Assert.AreNotEqual(result.GetType(), typeof(Error<string>));
+            Assert.AreEqual(3, (result.Output as IEnumerable<object>)?.Count());
         }
+
 
         [TestMethod]
         public void ShouldMatchOneOrMoreFails()
         {
             var number = R("[0-9]+").Map(n => int.Parse(n.ToString()));
-            var expression = number.OneOrMany("+");
+            var expression = (number + S("+").Optional()).OneOrMany();
             var result = expression.Parse("fail");
             Assert.AreEqual( typeof(Error<string>), result.GetType());
         }
@@ -114,6 +116,29 @@ namespace ParserTests
 
             Assert.AreNotEqual(typeof(Error<string>),result.GetType());
             Assert.AreNotEqual(typeof(Error<string>),result2.GetType());
+        }
+
+        [TestMethod]
+        public void ShouldNameParsers()
+        {
+            var identifier = R("[a-z]+");
+            var namedIdentifier = identifier.Name("identifier");
+
+            Assert.AreEqual("identifier", namedIdentifier.GetName());
+        }
+
+        [TestMethod]
+        public void ShouldAllowMutuallyRecursiveParsers()
+        {
+            var identifier = R("[a-z,0-9]+").Name("identifier");
+            var tag = (S("<") + identifier + S(">")).Name("tag");
+            var tagEnd = (S("<\\") + identifier + S(">")).Name("tagEnd");
+            var node=new Parser<string>().Name("node");
+            var nodeList = node.OneOrMany().Optional().Name("nodeList");
+            node.Func = (tag + nodeList + tagEnd).Name("node").Func;
+            var result = node.Parse("<test><test2><\\test2><\\test>");
+
+            Assert.AreNotEqual(typeof(Error<string>), result.GetType());
         }
     }
 }

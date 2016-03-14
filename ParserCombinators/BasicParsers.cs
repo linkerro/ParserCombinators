@@ -12,14 +12,17 @@ namespace ParserCombinators
                 ExpectedInput = match,
                 Func =
                     input =>
-                        input.StartsWith(match)
-                            ? new Result<string> { Output = null, Rest = input.Substring(match.Length) }
+                    {
+                        var trimmedInput = input.TrimStart();
+                        return trimmedInput.StartsWith(match)
+                            ? new Result<string> { Output = null, Rest = trimmedInput.Substring(match.Length) }
                             : new Error<string>
                             {
                                 Message = $"Expected \"{match}\", got \"{input}\".",
                                 Expected = match,
-                                Actual = input
-                            }
+                                Actual = trimmedInput
+                            };
+                    }
             };
         }
 
@@ -30,19 +33,20 @@ namespace ParserCombinators
                 ExpectedInput = expression.ToString(),
                 Func = input =>
                 {
-                    var match = expression.Match(input);
+                    var trimmedInput = input.TrimStart();
+                    var match = expression.Match(trimmedInput);
 
-                    return match.Success && match.Index==0
+                    return match.Success && match.Index == 0
                         ? new Result<string>
                         {
                             Output = match.Value,
-                            Rest = input.Substring(match.Index + match.Length)
+                            Rest = trimmedInput.Substring(match.Index + match.Length)
                         }
                         : new Error<string>
                         {
                             Message = $"Expected match on '{expression.ToString()}', got '{input}'.",
                             Expected = expression.ToString(),
-                            Actual = input
+                            Actual = trimmedInput
                         };
                 }
             };
@@ -53,6 +57,6 @@ namespace ParserCombinators
         public static Parser<string> R(string expression)
         {
             return GetRegexParser(new Regex(expression));
-        }  
+        }
     }
 }
