@@ -39,55 +39,11 @@ namespace ParserCombinators
         }
 
         /// <summary>
-        /// Gerates a parser that can matches one or more instances of its parent parser.
+        /// Generates a parsers that matches one or more times.
         /// </summary>
-        /// <param name="parser">The parent parser to be matched.</param>
-        /// <param name="separator">Any posible separator.</param>
-        /// <returns></returns>
-        public static Parser<string> OneOrMany(this Parser<string> parser, string separator)
-        {
-            Parser<string> mappedParser = new Parser<string>()
-            {
-                Func = input =>
-                {
-                    var rest = input;
-                    var outputs = new List<IEnumerable<object>>();
-                    rest = separator + rest;
-
-                    while (!string.IsNullOrEmpty(rest))
-                    {
-                        rest = rest.Substring(separator.Length, rest.Length - separator.Length);
-
-                        var result = parser.Func(rest);
-                        if (result.GetType() != typeof(Error<string>))
-                        {
-                            outputs.Add(result.Output as IEnumerable<object> ?? new List<object>() { result.Output });
-                            rest = result.Rest;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                    if (outputs.Count > 0)
-                    {
-                        return new Result<string>
-                        {
-                            Output = outputs.SelectMany(x => x).Where(x => x != null).ToList()
-                        };
-                    }
-                    return new Error<string>
-                    {
-                        Expected = parser.ExpectedInput,
-                        Actual = input
-                    };
-                },
-                ExpectedInput = $"{parser.ExpectedInput}(one or many)"
-            };
-            return mappedParser.Name($"oneOrMany {parser.GetName()}");
-        }
-
-        public static Parser<string> OneOrMany2(this Parser<string> parser)
+        /// <param name="parser">The parser that is to be matched one or more times.</param>
+        /// <returns>A parser that matches one or more times.</returns>
+        public static Parser<string> OneOrMany(this Parser<string> parser)
         {
             Parser<string> mappedParser = new Parser<string>();
 

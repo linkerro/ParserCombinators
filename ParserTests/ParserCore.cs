@@ -86,20 +86,10 @@ namespace ParserTests
         }
 
         [TestMethod]
-        public void ShouldMatchOneOreMoreOfTheSameParser()
-        {
-            var number= R("[0-9]+").Map(n => int.Parse(n.ToString()));
-            var expression = number.OneOrMany("+");
-            var result = expression.Parse("34+345+4");
-            Assert.AreNotEqual(result.GetType(),typeof(Error<string>));
-            Assert.AreEqual(3, (result.Output as IEnumerable<object>)?.Count());
-        }
-
-        [TestMethod]
         public void ShouldMatchOneOreMore2OfTheSameParser()
         {
             var number = R("[0-9]+").Name("number").Map(n => int.Parse(n.ToString()));
-            var expression = (number+S("+").Name("plus").Optional()).OneOrMany2().Name("expression");
+            var expression = (number+S("+").Name("plus").Optional()).OneOrMany().Name("expression");
             var result = expression.Parse("34 + 345 + 4");
             Assert.AreNotEqual(result.GetType(), typeof(Error<string>));
             Assert.AreEqual(3, (result.Output as IEnumerable<object>)?.Count());
@@ -110,7 +100,7 @@ namespace ParserTests
         public void ShouldMatchOneOrMoreFails()
         {
             var number = R("[0-9]+").Map(n => int.Parse(n.ToString()));
-            var expression = number.OneOrMany("+");
+            var expression = (number + S("+").Optional()).OneOrMany();
             var result = expression.Parse("fail");
             Assert.AreEqual( typeof(Error<string>), result.GetType());
         }
@@ -144,7 +134,7 @@ namespace ParserTests
             var tag = (S("<") + identifier + S(">")).Name("tag");
             var tagEnd = (S("<\\") + identifier + S(">")).Name("tagEnd");
             var node=new Parser<string>().Name("node");
-            var nodeList = (node.OneOrMany2().Optional()).Name("nodeList");
+            var nodeList = node.OneOrMany().Optional().Name("nodeList");
             node.Func = (tag + nodeList + tagEnd).Name("node").Func;
             var result = node.Parse("<test><test2><\\test2><\\test>");
 
