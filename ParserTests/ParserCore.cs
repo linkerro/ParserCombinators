@@ -36,7 +36,7 @@ namespace ParserTests
         [TestMethod]
         public void ShouldParseRegularExpression()
         {
-            var regexParser = BasicParsers.GetRegexParser(new Regex("[a-z]+"));
+            var regexParser = GetRegexParser(new Regex("[a-z]+"));
             var result = regexParser.Parse("whatever multipe words");
             Assert.AreEqual("whatever", result.Output);
         }
@@ -44,7 +44,7 @@ namespace ParserTests
         [TestMethod]
         public void ShouldFailToParseInvalidString()
         {
-            var regexParser = BasicParsers.GetRegexParser(new Regex("[a-z]+"));
+            var regexParser = GetRegexParser(new Regex("[a-z]+"));
             var result = regexParser.Parse("234345") as Error<string>;
             Assert.AreEqual("Expected match on '[a-z]+', got '234345'.", result?.Message);
         }
@@ -52,7 +52,7 @@ namespace ParserTests
         [TestMethod]
         public void ShouldReturnCorrectRestToParse2()
         {
-            var stringParser = BasicParsers.GetRegexParser(new Regex("[a-z]+"));
+            var stringParser = GetRegexParser(new Regex("[a-z]+"));
             var result = stringParser.Parse("whatever man");
             Assert.AreEqual(" man", result.Rest);
         }
